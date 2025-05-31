@@ -1,0 +1,22 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    plugins {
+        id 'io.freefair.lombok' version "8.6"
+        id 'com.google.cloud.tools.jib' version "3.4.3"
+    }
+}
+
+rootProject.name = 'etl'
+
+include     'spark-app',
+            'spark-platform'
+
+buildCache {
+    local {
+        directory = new File(rootDir, "build-cache")
+    }
+}
+

@@ -1,0 +1,90 @@
+plugins {
+    id 'project-conventions.java'
+    id 'io.freefair.lombok'
+    id 'com.google.cloud.tools.jib'
+}
+
+configurations {
+    all {
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+    }
+}
+
+dependencies {
+    implementation enforcedPlatform(project(":spark-platform"))
+    implementation enforcedPlatform("org.glassfish.jersey:jersey-bom")
+    implementation enforcedPlatform("com.fasterxml.jackson:jackson-bom")
+    implementation enforcedPlatform("io.netty:netty-bom")
+
+    implementation "org.apache.spark:spark-sql_2.13"
+    implementation "org.apache.spark:spark-core_2.13"
+
+    implementation platform("org.springframework.boot:spring-boot-dependencies")
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.slf4j:slf4j-api'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+var javaMainClass = 'com.bulatmain.lab.Application'
+
+final gradleOrEnvProp = { name ->
+    providers.gradleProperty(name).orElse(providers.environmentVariable(name)).get()
+}
+
+jib {
+    from {
+        image = "docker.io/bulatmain/spark:v3.5.5"
+        platforms {
+            platform {
+                os = 'linux'
+                architecture = 'amd64'
+            }
+        }
+    }
+    to {
+        image = "docker.io/${gradleOrEnvProp('DOCKER_USERNAME')}/${project.name}"
+
+        tags = [project.version.toString()]
+        if (!project.version.toString().endsWith('-SNAPSHOT')) {
+            tags.add('latest')
+        }
+
+        auth {
+            username = gradleOrEnvProp('DOCKER_USERNAME')
+            password = gradleOrEnvProp('DOCKER_PASSWORD')
+        }
+    }
+
+    containerizingMode = 'packaged'
+
+    container {
+        entrypoint = [
+                '/opt/spark/bin/spark-submit',
+                '--conf', 'spark.jars.ivy=/tmp/ivy',
+                '--conf', 'spark.driver.extraClassPath=/app/classpath/*:/app/libs/*',
+                '--conf', 'spark.executor.extraClassPath=/app/classpath/*:/app/libs/*',
+                '--class', javaMainClass,
+                "local:///app/classpath/${project.name}-${project.version}.jar"
+        ]
+
+        if (project.hasProperty('jib.build.timestamp')) {
+            creationTime = project.property('jib.build.timestamp')
+        } else {
+            creationTime = Instant.now().toString()
+        }
+    }
+}
+
+tasks.register('printImageReference') {
+    doLast {
+        println "Image: ${jib.to.image}"
+        println "Tags: ${jib.to.tags.join(', ')}"
+        println "Will authenticate with user: ${jib.to.auth.username ?: 'no auth configured'}"
+    }
+}
+

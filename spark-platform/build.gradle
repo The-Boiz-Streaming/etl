@@ -1,0 +1,42 @@
+plugins {
+    id 'java-platform'
+}
+
+javaPlatform {
+    allowDependencies()
+}
+
+final libVersions = [
+        springBoot              : '3.4.5',
+
+        scalaBase               : '2.13',
+        scala                   : '2.13.18',
+        scalaCollectionCompat   : '2.7.0',
+        scalaParserCombinators  : '2.3.0',
+        scalaXml                : '2.1.0',
+        spark                   : '3.5.5',
+        jackson                 : '2.15.4',
+        netty                   : '4.1.112.Final',
+        glassfishJersey         : '2.40',
+        glassfishHk2            : '2.6.1',
+        jakartaServletApi       : '4.0.3',
+        dropwizardMetrics       : '4.2.19',
+
+        slf4j                   : '2.0.13',
+        log4j2                  : '2.23.1',
+]
+
+dependencies {
+    api platform("org.springframework.boot:spring-boot-dependencies:${libVersions.springBoot}")
+    api(platform("com.fasterxml.jackson:jackson-bom:${libVersions.jackson}"))
+    api(platform("io.netty:netty-bom:${libVersions.netty}"))
+    api(platform("org.glassfish.jersey:jersey-bom:${libVersions.glassfishJersey}"))
+    api(platform("org.glassfish.hk2:hk2-bom:${libVersions.glassfishHk2}"))
+    api(platform("io.dropwizard.metrics:metrics-bom:${libVersions.dropwizardMetrics}"))
+
+    constraints {
+        api("org.apache.spark:spark-sql_${libVersions.scalaBase}:${libVersions.spark}")
+        api("org.apache.spark:spark-core_${libVersions.scalaBase}:${libVersions.spark}")
+        api("jakarta.servlet:jakarta.servlet-api:${libVersions.jakartaServletApi}")
+    }
+}

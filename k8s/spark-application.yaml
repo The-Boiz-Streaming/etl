@@ -1,0 +1,45 @@
+apiVersion: spark.apache.org/v1
+kind: SparkApplication
+metadata:
+  name: spark-app
+  namespace: lab
+spec:
+  mainClass: "com.bulatmain.lab.Application"
+  jars: "local:///app/classpath/spark-app-0.1.0-SNAPSHOT.jar"
+#  Set environment variables here
+  driver:
+    env:
+      - name: DB_HOST
+        valueFrom:
+          configMapKeyRef:
+            name: postgres-config
+            key: POSTGRES_HOST
+      - name: DB_PORT
+        valueFrom:
+          configMapKeyRef:
+            name: postgres-config
+            key: POSTGRES_PORT
+      - name: DB_NAME
+        value: lab2
+      - name: DB_USER
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secrets
+            key: POSTGRES_USER
+      - name: DB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secrets
+            key: POSTGRES_PASSWORD
+  sparkConf:
+    spark.app.name: "spark-app"
+    spark.jars.ivy: "/tmp/ivy"
+    spark.dynamicAllocation.enabled: "true"
+    spark.dynamicAllocation.shuffleTracking.enabled: "true"
+    spark.dynamicAllocation.maxExecutors: "3"
+    spark.kubernetes.authenticate.driver.serviceAccountName: "spark"
+    spark.kubernetes.container.image: "bulatmain/spark-app:0.1.0-SNAPSHOT"
+  applicationTolerations:
+    resourceRetainPolicy: OnFailure
+  runtimeVersions:
+    sparkVersion: "3.5.5"
