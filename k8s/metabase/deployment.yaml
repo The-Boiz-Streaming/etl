@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metabase
+  namespace: etl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metabase
+  template:
+    metadata:
+      labels:
+        app: metabase
+    spec:
+      containers:
+        - name: metabase-staging
+          image: metabase/metabase:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MB_DB_TYPE
+              value: "h2"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Dfile.encoding=UTF-8"
+          volumeMounts:
+            - name: metabase-data
+              mountPath: /metabase-data
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: metabase-data
+          persistentVolumeClaim:
+            claimName: metabase-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metabase-service
+  namespace: etl
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-web
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: metabase
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: metabase-pvc
+  namespace: etl
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

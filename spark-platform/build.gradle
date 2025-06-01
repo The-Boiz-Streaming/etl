@@ -14,13 +14,21 @@ final libVersions = [
         scalaCollectionCompat   : '2.7.0',
         scalaParserCombinators  : '2.3.0',
         scalaXml                : '2.1.0',
-        spark                   : '3.5.5',
         jackson                 : '2.15.4',
         netty                   : '4.1.112.Final',
         glassfishJersey         : '2.40',
         glassfishHk2            : '2.6.1',
         jakartaServletApi       : '4.0.3',
         dropwizardMetrics       : '4.2.19',
+
+        spark                   : '3.5.5',
+        kafka                   : '3.8.0',
+        sparkKafka              : '3.5.5',
+        clickhouse              : '0.8.6',
+
+        avro                    : '1.11.3',
+
+        flyway                  : '11.8.2',
 
         slf4j                   : '2.0.13',
         log4j2                  : '2.23.1',
@@ -37,6 +45,13 @@ dependencies {
     constraints {
         api("org.apache.spark:spark-sql_${libVersions.scalaBase}:${libVersions.spark}")
         api("org.apache.spark:spark-core_${libVersions.scalaBase}:${libVersions.spark}")
+        api("org.apache.spark:spark-streaming-kafka-0-10_${libVersions.scalaBase}:${libVersions.sparkKafka}")
+        api("org.apache.spark:spark-avro_${libVersions.scalaBase}:${libVersions.spark}")
+        api("org.apache.kafka:kafka-clients:${libVersions.kafka}")
+        api("com.clickhouse:clickhouse-jdbc:${libVersions.clickhouse}")
+        api("org.apache.avro:avro:${libVersions.avro}")
         api("jakarta.servlet:jakarta.servlet-api:${libVersions.jakartaServletApi}")
+        api("org.flywaydb:flyway-core:${libVersions.flyway}")
+
     }
 }

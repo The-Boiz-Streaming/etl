@@ -1,0 +1,35 @@
+kafka:
+  bootstrap-servers: kafka-0.kafka-headless.etl.svc.cluster.local:9092,kafka-1.kafka-headless.etl.svc.cluster.local:9092
+clickhouse:
+  url: jdbc:clickhouse://clickhouse:8123/default
+  user: default
+  password: ""
+etl:
+  jobs:
+    track-playback:
+      topic: track-playback-events
+      schema-file: avro/track_playback.avsc
+      table: track_playback
+      period-seconds: 3600
+    track-like:
+      topic: track-like-events
+      schema-file: avro/track_like.avsc
+      table: track_like
+      period-seconds: 3600
+    track-add-to-playlist:
+      topic: track-add-to-playlist-events
+      schema-file: avro/track_add_to_playlist.avsc
+      table: track_add_to_playlist
+      period-seconds: 3600
+
+spring:
+  datasource:
+    url: jdbc:clickhouse://clickhouse:8123/default
+    username: default
+    password: ""
+    driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true

@@ -8,7 +8,7 @@ First create project namespace:
 kubectl create namespace lab
 ```
 
-To deploy clickhouse and metabase
+To deploy kafka, clickhouse and metabase
 
 ```
 kubectl apply -k k8s/

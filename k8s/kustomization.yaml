@@ -1,1 +1,4 @@
-#resources:
+resources:
+  - kafka/deployment.yaml
+  - clickhouse/deployment.yaml
+  - metabase/deployment.yaml

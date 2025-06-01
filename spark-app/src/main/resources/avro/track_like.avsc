@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "TrackLike",
+  "namespace": "music.events",
+  "fields": [
+    {"name": "event_id", "type": "string"},
+    {"name": "user_id", "type": "int"},
+    {"name": "track_id", "type": "int"},
+    {"name": "release_id", "type": "int"},
+    {"name": "artist_id", "type": "int"},
+    {"name": "like_time", "type": "string"},
+    {"name": "device_type", "type": "string"},
+    {"name": "country_code", "type": "string"},
+    {"name": "session_id", "type": "string"}
+  ]
+}

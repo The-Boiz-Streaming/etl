@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: etl
+spec:
+  serviceName: clickhouse
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+    spec:
+      containers:
+      - name: clickhouse
+        image: yandex/clickhouse-server:latest
+        ports:
+        - containerPort: 8123
+          name: http
+        - containerPort: 9000
+          name: tcp
+        - containerPort: 9009
+          name: interserver
+        volumeMounts:
+        - name: config
+          mountPath: /etc/clickhouse-server/config.d/users.xml
+          subPath: users.xml
+        - name: config
+          mountPath: /etc/clickhouse-server/config.d/config.xml
+          subPath: config.xml
+        - name: data
+          mountPath: /var/lib/clickhouse
+      volumes:
+      - name: config
+        configMap:
+          name: clickhouse-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-config
+  namespace: etl
+data:
+  users.xml: |
+    <yandex>
+      <users>
+        <default>
+          <password></password>
+          <networks>
+            <ip>::/0</ip>
+          </networks>
+          <profile>default</profile>
+          <quota>default</quota>
+        </default>
+      </users>
+    </yandex>
+  config.xml: |
+    <yandex>
+      <listen_host>0.0.0.0</listen_host>
+      <logger>
+        <level>trace</level>
+        <log>/var/log/clickhouse-server/clickhouse-server.log</log>
+        <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
+        <size>1000M</size>
+        <count>10</count>
+      </logger>
+    </yandex>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  namespace: etl
+spec:
+  selector:
+    app: clickhouse
+  ports:
+  - name: http
+    port: 8123
+    targetPort: http
+  - name: tcp
+    port: 9000
+    targetPort: tcp
+  - name: interserver
+    port: 9009
+    targetPort: interserver
